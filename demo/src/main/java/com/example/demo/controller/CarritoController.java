@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/carrito")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // Permitir acceso desde Android
 public class CarritoController {
 
     private final CarritoService carritoService;
@@ -20,36 +20,48 @@ public class CarritoController {
         this.carritoService = carritoService;
     }
 
+    // =========================================================
+    // Obtener carrito de un usuario
+    // =========================================================
     @GetMapping("/{usuarioId}")
     public ResponseEntity<List<CarritoItem>> obtenerCarrito(@PathVariable Long usuarioId) {
         return ResponseEntity.ok(carritoService.obtenerCarrito(usuarioId));
     }
 
+    // =========================================================
+    // Agregar producto al carrito
+    // =========================================================
     @PostMapping("/agregar")
-    public ResponseEntity<CarritoItem> agregar(@RequestBody CarritoAgregarRequest req) {
-        CarritoItem item = carritoService.agregarProducto(req.getUsuarioId(), req.getProductoId(), req.getCantidad());
-        return ResponseEntity.ok(item);
+    public ResponseEntity<CarritoItem> agregarProducto(@RequestBody CarritoAgregarRequest req) {
+        return ResponseEntity.ok(carritoService.agregarProducto(req));
     }
 
-    @PutMapping("/{itemId}")
+    // =========================================================
+    // Actualizar cantidad de un item
+    // =========================================================
+    @PutMapping("/{itemId}/cantidad")
     public ResponseEntity<CarritoItem> actualizarCantidad(
             @PathVariable Long itemId,
             @RequestBody CarritoActualizarCantidadRequest req
     ) {
-        CarritoItem item = carritoService.actualizarCantidad(itemId, req.getCantidad());
-        return ResponseEntity.ok(item);
+        return ResponseEntity.ok(carritoService.actualizarCantidad(itemId, req));
     }
 
+    // =========================================================
+    // Eliminar item del carrito
+    // =========================================================
     @DeleteMapping("/{itemId}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long itemId) {
+    public ResponseEntity<Void> eliminarItem(@PathVariable Long itemId) {
         carritoService.eliminarItem(itemId);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/usuario/{usuarioId}")
-    public ResponseEntity<Void> vaciar(@PathVariable Long usuarioId) {
+    // =========================================================
+    // Vaciar carrito de un usuario
+    // =========================================================
+    @DeleteMapping("/vaciar/{usuarioId}")
+    public ResponseEntity<Void> vaciarCarrito(@PathVariable Long usuarioId) {
         carritoService.vaciarCarrito(usuarioId);
         return ResponseEntity.noContent().build();
     }
 }
-
