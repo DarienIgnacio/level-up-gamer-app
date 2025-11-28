@@ -1,54 +1,62 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.UsuarioResponse;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.UsuarioRepository;
-import com.example.demo.exception.ResourceNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
+@Transactional
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioRepository repo;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public UsuarioService(UsuarioRepository repo) {
+        this.repo = repo;
     }
 
-    // Registrar un usuario nuevo
-    public Usuario registrar(Usuario usuario) {
+    public UsuarioResponse registrar(RegisterRequest req) {
+        // Podrías validar rut, email, etc. aquí
+        Usuario user = Usuario.builder()
+                .nombre(req.getNombre())
+                .email(req.getEmail())
+                .rut(req.getRut())
+                .password(req.getPassword()) // En producción: encriptar
+                .esAdmin(req.isEsAdmin())
+                .build();
 
-        // Validar si el email ya existe
-        if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
-            throw new RuntimeException("El email ya está registrado");
-        }
-
-        // Guardar usuario
-        return usuarioRepository.save(usuario);
+        Usuario saved = repo.save(user);
+        return toResponse(saved);
     }
 
-    // Login simple (email + password)
-    public Usuario login(String email, String password) {
-
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        if (!usuario.getPassword().equals(password)) {
-            throw new RuntimeException("Contraseña incorrecta");
-        }
-
-        return usuario;
-    }
-
-    // Obtener un usuario por id
-    public Usuario obtenerPorId(Long id) {
-        return usuarioRepository.findById(id)
+    public UsuarioResponse login(String email, String password) {
+        Usuario user = repo.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("Credenciales inválidas");
+        }
+
+        return toResponse(user);
     }
 
-    // Listar todos los usuarios (si lo necesitas)
-    public Iterable<Usuario> listar() {
-        return usuarioRepository.findAll();
+    public UsuarioResponse obtenerPorId(Long id) {
+        Usuario user = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id " + id));
+        return toResponse(user);
+    }
+
+    private UsuarioResponse toResponse(Usuario user) {
+        UsuarioResponse dto = new UsuarioResponse();
+        dto.setId(user.getId());
+        dto.setNombre(user.getNombre());
+        dto.setEmail(user.getEmail());
+        dto.setRut(user.getRut());
+        dto.setEsAdmin(user.isEsAdmin());
+        return dto;
     }
 }
+

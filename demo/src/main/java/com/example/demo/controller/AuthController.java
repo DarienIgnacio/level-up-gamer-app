@@ -1,14 +1,15 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Usuario;
+import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.UsuarioResponse;
 import com.example.demo.service.UsuarioService;
-import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")   // Permitir Android acceder a la API
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final UsuarioService usuarioService;
@@ -17,55 +18,20 @@ public class AuthController {
         this.usuarioService = usuarioService;
     }
 
-    // ============================
-    // REGISTRO
-    // ============================
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-
-        Usuario nuevo = Usuario.builder()
-                .nombre(request.getNombre())
-                .email(request.getEmail())
-                .password(request.getPassword())
-                .rut(request.getRut())
-                .esAdmin(false)  // Puedes cambiarlo si quieres roles
-                .build();
-
-        Usuario registrado = usuarioService.registrar(nuevo);
-
-        return ResponseEntity.ok(registrado);
+    public ResponseEntity<UsuarioResponse> register(@RequestBody RegisterRequest req) {
+        return ResponseEntity.ok(usuarioService.registrar(req));
     }
 
-    // ============================
-    // LOGIN
-    // ============================
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-
-        Usuario usuario = usuarioService.login(
-                request.getEmail(),
-                request.getPassword()
-        );
-
-        return ResponseEntity.ok(usuario);
+    public ResponseEntity<UsuarioResponse> login(@RequestBody LoginRequest req) {
+        UsuarioResponse user = usuarioService.login(req.getEmail(), req.getPassword());
+        return ResponseEntity.ok(user);
     }
 
-
-    // ============================
-    // CLASES DTO Internas
-    // ============================
-
-    @Data
-    public static class RegisterRequest {
-        private String nombre;
-        private String email;
-        private String password;
-        private String rut;
-    }
-
-    @Data
-    public static class LoginRequest {
-        private String email;
-        private String password;
+    @GetMapping("/usuario/{id}")
+    public ResponseEntity<UsuarioResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(usuarioService.obtenerPorId(id));
     }
 }
+
