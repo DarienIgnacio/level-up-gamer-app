@@ -1,8 +1,6 @@
-package com.example.level_up_gamer_app.views
+package com.example.level_up_gamer_app.Views
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,49 +10,19 @@ import androidx.navigation.NavController
 
 @Composable
 fun ErrorScreen(
-    navController: NavController
+    navController: NavController,
+    message: String = "Ha ocurrido un error"
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.Error,
-            contentDescription = "Error",
-            tint = MaterialTheme.colorScheme.error,
-            modifier = Modifier.size(80.dp)
-        )
-
-        Text(
-            text = "Error en la Compra",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
-
-        Text(
-            text = "Lo sentimos, ha ocurrido un error en el proceso de compra. " +
-                    "Puede ser por falta de stock o un error en el sistema de pago.",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = { navController.navigate("cart") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Revisar Carrito")
-        }
-
-        TextButton(
-            onClick = { navController.navigate("catalog") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Volver al Catálogo")
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(message, color = MaterialTheme.colorScheme.error)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { navController.popBackStack() }) {
+                Text("Volver")
+            }
         }
     }
 }

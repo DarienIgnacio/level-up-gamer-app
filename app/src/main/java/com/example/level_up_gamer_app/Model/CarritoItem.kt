@@ -1,4 +1,4 @@
-package com.example.level_up_gamer_app.Model
+package com.example.level_up_gamer_app.model
 
 data class CarritoItem(
     val producto: Producto,

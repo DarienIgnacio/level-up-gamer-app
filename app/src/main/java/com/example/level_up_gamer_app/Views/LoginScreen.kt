@@ -1,4 +1,4 @@
-package com.example.level_up_gamer_app.views
+package com.example.level_up_gamer_app.Views
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -7,9 +7,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.level_up_gamer_app.Viewmodel.AuthViewModel
+import com.example.level_up_gamer_app.utils.Validators
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -17,82 +20,88 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Tienda Gamer",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
+    val isLoading = authViewModel.isLoading
+    val loginSuccess = authViewModel.loginSuccess
 
-        Spacer(modifier = Modifier.height(32.dp))
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            navController.navigate("catalog") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = showError && email.isBlank()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Contraseña") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            isError = showError && password.isBlank()
-        )
-
-        if (showError) {
-            Text(
-                text = "Credenciales inválidas",
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 8.dp)
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Level Up Gamer - Login") }
             )
         }
-
-        Text(
-            text = authViewModel.mensaje.value,
-            color = if (authViewModel.mensaje.value.contains("❌")) MaterialTheme.colorScheme.error
-            else MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = {
-                if (email.isNotBlank() && password.isNotBlank()) {
-                    if (authViewModel.login(email, password)) {
-                        val isAdmin = authViewModel.usuarioActual.value?.esAdmin == true
-                        val route = if (isAdmin) "admin" else "catalog"
-                        navController.navigate(route) {
-                            popUpTo("auth_graph") { inclusive = true }
-                        }
-                    } else {
-                        showError = true
-                    }
-                } else {
-                    showError = true
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Iniciar Sesión")
-        }
 
-        TextButton(onClick = { navController.navigate("register") }) {
-            Text("¿No tienes cuenta? Regístrate")
+            Text("Bienvenido", fontSize = 24.sp)
+            Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Correo") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Contraseña") },
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        if (!Validators.isValidEmail(email)) {
+                            errorMessage = "Correo inválido"
+                            return@Button
+                        }
+
+                        if (!Validators.isValidPassword(password)) {
+                            errorMessage = "Contraseña demasiado corta"
+                            return@Button
+                        }
+
+                        authViewModel.login(email, password) }
+                ) {
+                    Text("Iniciar sesión", fontSize = 18.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            TextButton(onClick = { navController.navigate("register") }) {
+                Text("¿No tienes cuenta? Regístrate")
+            }
+
+            errorMessage.let {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = it, color = MaterialTheme.colorScheme.error)
+            }
         }
     }
 }

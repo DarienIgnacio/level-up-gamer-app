@@ -37,4 +37,14 @@ object Validators {
     fun isValidPassword(password: String): Boolean {
         return password.length >= 6
     }
+
+    fun isValidPrice(precio: String): Boolean {
+        return precio.isNotEmpty() && precio.all { it.isDigit() } && precio.toInt() > 0
+    }
+
+    // 🔹 Validar que la URL sea válida (http/https)
+    fun isValidUrl(url: String): Boolean {
+        return url.startsWith("http://") || url.startsWith("https://")
+    }
+
 }

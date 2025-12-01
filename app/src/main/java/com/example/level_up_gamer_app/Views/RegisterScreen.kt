@@ -1,16 +1,18 @@
-package com.example.level_up_gamer_app.views
+package com.example.level_up_gamer_app.Views
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.level_up_gamer_app.Viewmodel.AuthViewModel
+import com.example.level_up_gamer_app.utils.Validators
+import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 
 @Composable
 fun RegisterScreen(
@@ -21,85 +23,68 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var rut by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
+        modifier = Modifier.padding(20.dp)
     ) {
-        Text(
-            text = "Registro Tienda Gamer",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
+        Text("Registro", fontWeight = FontWeight.Bold)
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = nombre,
             onValueChange = { nombre = it },
-            label = { Text("Nombre completo") },
+            label = { Text("Nombre") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
+            label = { Text("Correo") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = rut,
             onValueChange = { rut = it },
-            label = { Text("RUT (con dígito verificador)") },
+            label = { Text("RUT (11.111.111-1)") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Contraseña") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation()
+            modifier = Modifier.fillMaxWidth()
         )
+
+        if (errorMessage != null) {
+            Text(text = errorMessage!!, color = MaterialTheme.colorScheme.error)
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = { Text("Confirmar Contraseña") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = authViewModel.mensaje.value,
-            color = if (authViewModel.mensaje.value.contains("❌")) MaterialTheme.colorScheme.error
-            else MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
         Button(
             onClick = {
-                if (authViewModel.registrar(nombre, email, rut, password, confirmPassword)) {
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true }
+                // VALIDACIONES
+                when {
+                    nombre.isBlank() ->
+                        errorMessage = "Debes ingresar un nombre"
+
+                    !Validators.isValidEmail(email) ->
+                        errorMessage = "Correo electrónico inválido"
+
+                    !Validators.isValidRUT(rut) ->
+                        errorMessage = "RUT inválido"
+
+                    !Validators.isValidPassword(password) ->
+                        errorMessage = "La contraseña debe tener al menos 6 caracteres"
+
+                    else -> {
+                        errorMessage = null
+                        authViewModel.register(nombre, email, rut, password)
                     }
                 }
             },
@@ -109,10 +94,18 @@ fun RegisterScreen(
         }
 
         TextButton(
-            onClick = { navController.navigate("login") },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            onClick = { navController.navigate("login") }
         ) {
-            Text("¿Ya tienes cuenta? Inicia sesión")
+            Text("Volver a iniciar sesión")
+        }
+    }
+
+    // NAVEGACIÓN CUANDO REGISTER SUCCESS
+    if (authViewModel.registerSuccess) {
+        LaunchedEffect(Unit) {
+            navController.navigate("login") {
+                popUpTo("register") { inclusive = true }
+            }
         }
     }
 }

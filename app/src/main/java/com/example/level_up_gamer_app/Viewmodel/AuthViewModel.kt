@@ -1,72 +1,62 @@
 package com.example.level_up_gamer_app.Viewmodel
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.level_up_gamer_app.Model.FakeDatabase
-import com.example.level_up_gamer_app.Model.Usuario
-import com.example.level_up_gamer_app.utils.Validators
+import androidx.lifecycle.viewModelScope
+import com.example.level_up_gamer_app.model.Usuario
+import com.example.level_up_gamer_app.repository.AuthRepository
+import kotlinx.coroutines.launch
 
-class AuthViewModel : ViewModel() {
-    var mensaje = mutableStateOf("")
-    var usuarioActual = mutableStateOf<Usuario?>(null)
+class AuthViewModel(
+    private val repo: AuthRepository = AuthRepository()
+) : ViewModel() {
 
-    fun registrar(
-        nombre: String,
-        email: String,
-        rut: String,
-        password: String,
-        confirmPassword: String
-    ): Boolean {
-        // Validaciones
-        if (nombre.isBlank() || email.isBlank() || rut.isBlank() || password.isBlank()) {
-            mensaje.value = "Todos los campos son obligatorios"
-            return false
-        }
+    var isLoading by mutableStateOf(false)
+        private set
 
-        if (!Validators.isValidEmail(email)) {
-            mensaje.value = "Email inválido"
-            return false
-        }
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
 
-        if (!Validators.isValidRUT(rut)) {
-            mensaje.value = "RUT inválido"
-            return false
-        }
+    var usuarioActual by mutableStateOf<Usuario?>(null)
+        private set
 
-        if (!Validators.isValidPassword(password)) {
-            mensaje.value = "La contraseña debe tener al menos 6 caracteres"
-            return false
-        }
+    var loginSuccess by mutableStateOf(false)
+        private set
 
-        if (password != confirmPassword) {
-            mensaje.value = "Las contraseñas no coinciden"
-            return false
-        }
+    var registerSuccess by mutableStateOf(false)
+        private set
 
-        val nuevoUsuario = Usuario(nombre, email, rut, password)
-        return if (FakeDatabase.registrar(nuevoUsuario)) {
-            mensaje.value = "Registro exitoso ✅"
-            true
-        } else {
-            mensaje.value = "El usuario ya existe ❌"
-            false
+    fun login(email: String, password: String) {
+        isLoading = true
+        errorMessage = null
+        viewModelScope.launch {
+            val result = repo.login(email, password)
+            result
+                .onSuccess {
+                    usuarioActual = it
+                    loginSuccess = true
+                }
+                .onFailure { errorMessage = it.message }
+            isLoading = false
         }
     }
 
-    fun login(email: String, password: String): Boolean {
-        val usuario = FakeDatabase.login(email, password)
-        return if (usuario != null) {
-            usuarioActual.value = usuario
-            mensaje.value = "Inicio de sesión exitoso 🎉"
-            true
-        } else {
-            mensaje.value = "Credenciales inválidas ❌"
-            false
+    fun register(nombre: String, email: String, rut: String, password: String) {
+        isLoading = true
+        errorMessage = null
+        viewModelScope.launch {
+            val result = repo.register(nombre, email, rut, password)
+            result
+                .onSuccess { registerSuccess = true }
+                .onFailure { errorMessage = it.message }
+            isLoading = false
         }
     }
 
     fun logout() {
-        usuarioActual.value = null
-        mensaje.value = "Sesión cerrada"
+        usuarioActual = null
+        loginSuccess = false
     }
 }

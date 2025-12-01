@@ -1,8 +1,6 @@
-package com.example.level_up_gamer_app.views
+package com.example.level_up_gamer_app.Views
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,59 +10,22 @@ import androidx.navigation.NavController
 
 @Composable
 fun SuccessScreen(
-    navController: NavController,
-    orderNumber: String,
-    total: Int
+    navController: NavController
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.CheckCircle,
-            contentDescription = "Éxito",
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(80.dp)
-        )
-
-        Text(
-            text = "¡Compra Exitosa!",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
-
-        Text(
-            text = "Número de orden: $orderNumber",
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Text(
-            text = "Total Pagado: $$total",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = { navController.navigate("catalog") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Seguir Comprando")
-        }
-
-        TextButton(
-            onClick = {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("¡Compra realizada con éxito!")
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
                 navController.navigate("catalog") {
-                    popUpTo("catalog") { inclusive = true }
+                    popUpTo("catalog") { inclusive = false }
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Volver al Inicio")
+            }) {
+                Text("Volver al catálogo")
+            }
         }
     }
 }
