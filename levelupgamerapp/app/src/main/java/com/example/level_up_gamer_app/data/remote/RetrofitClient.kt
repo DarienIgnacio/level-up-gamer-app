@@ -4,35 +4,48 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import android.content.Context
 
 object RetrofitClient {
 
-    // TODO: cambia por la IP de tu EC2
-    private const val BASE_URL = "http://3.82.51.159:8080/"
+    private const val BASE_URL = "http://23.22.166.178:9090/"
+    private const val CURRENCY_BASE_URL = "https://api.exchangerate.host/"
 
-    private val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+    // Usa 'by lazy' para crear el cliente OkHttp solo cuando se necesite.
+    // Este cliente se compartirá entre ambas instancias de Retrofit.
+    private val okHttpClient: OkHttpClient by lazy {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+        OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
     }
 
-    private val backendClient: OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(logging)
-        .build()
-
-    val apiService: ApiService by lazy {
+    // Crea la instancia de Retrofit para tu backend principal, también con 'lazy'.
+    private val backendRetrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(backendClient)
+            .client(okHttpClient) // Usa el cliente lazy
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ApiService::class.java)
     }
 
-    // Segunda API: exchangerate.host
-    val currencyApi: CurrencyApiService by lazy {
+    // Crea la instancia de Retrofit para la API de divisas, con 'lazy'.
+    private val currencyRetrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("https://api.exchangerate.host/")
+            .baseUrl(CURRENCY_BASE_URL)
+            .client(okHttpClient) // Reutiliza el mismo cliente OkHttp
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(CurrencyApiService::class.java)
+    }
+
+    // Expón tus servicios de API, que también se crearán de forma perezosa.
+    val apiService: ApiService by lazy {
+        backendRetrofit.create(ApiService::class.java)
+    }
+
+    val currencyApi: CurrencyApiService by lazy {
+        currencyRetrofit.create(CurrencyApiService::class.java)
     }
 }

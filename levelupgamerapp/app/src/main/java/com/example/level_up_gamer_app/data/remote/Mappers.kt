@@ -8,13 +8,13 @@ import com.example.level_up_gamer_app.model.Usuario
 // ---------------- PRODUCTOS ----------------
 fun ProductDto.toProducto(): Producto =
     Producto(
-        id = id,
+        id = id ?: 0L,              // 🔧 seguro
         nombre = nombre,
-        descripcion = descripcion ?: "",
+        descripcion = descripcion,
         precio = precio,
-        imagen = imagen ?: "",
-        categoria = categoria ?: "",
-        stock = stock ?: 0
+        imagen = imagen,
+        categoria = categoria,
+        stock = stock
     )
 
 fun Producto.toDto(): ProductDto =
@@ -35,6 +35,5 @@ fun UsuarioResponse.toUsuario(): Usuario =
         nombre = nombre,
         email = email,
         rut = rut,
-        esAdmin = esAdmin,
-        token = null
+        esAdmin = esAdmin
     )

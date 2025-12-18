@@ -17,6 +17,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -31,6 +32,14 @@ android {
             )
         }
     }
+
+    // ----------------------------------
+    // 🔧 Compatibilidad con testing
+    // ----------------------------------
+    testOptions {
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -49,13 +58,19 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
     dynamicFeatures += setOf(":app:dynamicfeature")
 }
 
 dependencies {
+
+    // ---------------------------------------------------
+    // 🟩 CORE DEL PROYECTO
+    // ---------------------------------------------------
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.2")
+
     implementation(platform("androidx.compose:compose-bom:2023.08.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -69,36 +84,62 @@ dependencies {
     // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
-    // Gson para JSON
+    // Gson
     implementation("com.google.code.gson:gson:2.9.0")
 
-    // Coil para imágenes
+    // Coil
     implementation("io.coil-kt:coil-compose:2.3.0")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
     // OkHttp
-        implementation("com.squareup.okhttp3:okhttp:4.12.0")
-        implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Room
-        implementation("androidx.room:room-runtime:2.6.1")
-        implementation("androidx.room:room-ktx:2.6.1")
-        ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
-    // Dependencias de Firebase
-        implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
-        implementation("com.google.firebase:firebase-auth-ktx") // Para Authentication
-        implementation("com.google.firebase:firebase-firestore-ktx") // Para Firestore// Dependencia de Corrutinas para el .await()
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
+    // ---------------------------------------------------
+    // 🧪 TEST UNITARIOS (test/)
+    // ---------------------------------------------------
+    // JUnit base
+    testImplementation("junit:junit:4.13.2")
+
+    // MockK (Mocks Kotlin)
+    testImplementation("io.mockk:mockk:1.13.7")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+
+    // Coroutines Test (para ViewModels)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    // Truth (assertions más legibles)
+    testImplementation("com.google.truth:truth:1.1.5")
+
+
+    // ---------------------------------------------------
+    // 📱 TESTS INSTRUMENTADOS (androidTest/)
+    // ---------------------------------------------------
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    // Compose testing
+    androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+
+    // Needed for compose testing
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // Espresso contrib (scroll, recyclerView, gestures…)
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
+
+    // Orchestrator (ejecución estable)
+    androidTestUtil("androidx.test:orchestrator:1.4.2")
 }

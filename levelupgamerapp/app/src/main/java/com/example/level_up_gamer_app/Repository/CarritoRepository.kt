@@ -1,37 +1,47 @@
 package com.example.level_up_gamer_app.repository
 
+import com.example.level_up_gamer_app.data.remote.dto.ProductDto
 import com.example.level_up_gamer_app.model.CarritoItem
-import com.example.level_up_gamer_app.model.Producto
 
+/**
+ * Repositorio simple en memoria.
+ * No se usa aún para persistir el carrito,
+ * pero queda preparado por si después quieres guardar en DataStore o BD local.
+ */
 class CarritoRepository {
 
-    private val _items = mutableListOf<CarritoItem>()
+    // Lista interna del carrito (no Compose State aquí)
+    private val carrito = mutableListOf<CarritoItem>()
 
-    fun obtenerCarrito(): List<CarritoItem> = _items.toList()
+    fun obtenerCarrito(): List<CarritoItem> {
+        return carrito.toList()
+    }
 
-    fun agregarProducto(producto: Producto) {
-        val existente = _items.indexOfFirst { it.producto.id == producto.id }
-        if (existente >= 0) {
-            val item = _items[existente]
-            _items[existente] = item.copy(cantidad = item.cantidad + 1)
+    fun agregarProducto(producto: ProductDto) {
+        val existente = carrito.find { it.producto.id == producto.id }
+
+        if (existente != null) {
+            existente.cantidad++
         } else {
-            _items.add(CarritoItem(producto, 1))
+            carrito.add(CarritoItem(producto, 1))
         }
     }
 
-    fun quitarProducto(producto: Producto) {
-        val existente = _items.indexOfFirst { it.producto.id == producto.id }
-        if (existente >= 0) {
-            val item = _items[existente]
-            if (item.cantidad > 1) {
-                _items[existente] = item.copy(cantidad = item.cantidad - 1)
-            } else {
-                _items.removeAt(existente)
-            }
+    fun quitarProducto(id: Long) {
+        carrito.removeAll { it.producto.id == id }
+    }
+
+    fun incrementar(id: Long) {
+        carrito.find { it.producto.id == id }?.let { it.cantidad++ }
+    }
+
+    fun decrementar(id: Long) {
+        carrito.find { it.producto.id == id }?.let {
+            if (it.cantidad > 1) it.cantidad--
         }
     }
 
     fun vaciar() {
-        _items.clear()
+        carrito.clear()
     }
 }
